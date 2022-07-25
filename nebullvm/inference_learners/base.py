@@ -11,6 +11,7 @@ import numpy as np
 import tensorflow as tf
 import torch
 
+from nebullvm.config import SAVE_DIR_NAME
 from nebullvm.base import ModelParams
 from nebullvm.config import LEARNER_METADATA_FILENAME
 from nebullvm.transformations.base import MultiStageTransformation
@@ -310,9 +311,14 @@ class LearnerMetadata:
         Returns:
             LearnerMetadata: Metadata associated with the model.
         """
-        path = Path(path)
-        with open(path / cls.NAME, "r") as fin:
-            metadata_dict = json.load(fin)
+        try:  # read metadata with the path from framework
+            path = Path(path)
+            with open(path / cls.NAME, "r") as fin:
+                metadata_dict = json.load(fin)
+        except FileNotFoundError:
+            path = Path(path) / SAVE_DIR_NAME
+            with open(path / cls.NAME, "r") as fin:
+                metadata_dict = json.load(fin)
         return cls(**metadata_dict)
 
     def save(self, path: Union[Path, str]):
